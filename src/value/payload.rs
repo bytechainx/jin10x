@@ -143,6 +143,21 @@ pub fn validate_payload(payload: &Jin10Payload) -> Result<(), crate::Jin10Error>
             }
         }
         Jin10Payload::Calendar(event) => {
+            if [
+                event.previous,
+                event.consensus,
+                event.actual,
+                event.revised,
+                event.surprise_z,
+            ]
+            .into_iter()
+            .flatten()
+            .any(|value| !value.is_finite())
+            {
+                return Err(crate::Jin10Error::Invalid(
+                    "日历数值字段须为有限数值，缺失须保持 None".to_owned(),
+                ));
+            }
             if event.country.trim().is_empty() {
                 return Err(crate::Jin10Error::Missing("country".to_owned()));
             }

@@ -184,3 +184,117 @@ fn huge_msg_id_does_not_panic() {
     let parsed = parse_jin10_envelopes(&input).expect("超长标识仍应可解析");
     assert_eq!(parsed[0].msg_id.len(), 100_000);
 }
+
+/// 日历的五个可选数值字段逐一拒绝非有限值，并保留缺失与有限极值。
+#[test]
+fn calendar_numeric_fields_reject_non_finite_values() {
+    for field in 0..5 {
+        for value in [
+            f64::NAN,
+            f64::INFINITY,
+            f64::NEG_INFINITY,
+            f64::MAX,
+            -f64::MAX,
+        ] {
+            let mut fields = [None; 5];
+            fields[field] = Some(value);
+            let payload = Jin10Payload::Calendar(jin10x::CalendarEvent {
+                country: "SYNTH_COUNTRY".into(),
+                indicator: "SYNTH_INDICATOR".into(),
+                previous: fields[0],
+                consensus: fields[1],
+                actual: fields[2],
+                revised: fields[3],
+                surprise_z: fields[4],
+            });
+            let result = validate_payload(&payload);
+            if value.is_finite() {
+                assert!(result.is_ok());
+            } else {
+                assert_eq!(
+                    result.expect_err("非有限数必须拒绝").kind(),
+                    Jin10ErrorKind::Invalid
+                );
+            }
+        }
+    }
+}
+
+/// 映射入口不得通过公开 Rust API 把非有限数送入宏观提议。
+#[test]
+fn macro_mapping_rejects_non_finite_values() {
+    for value in [
+        Some(f64::NAN),
+        Some(f64::INFINITY),
+        Some(f64::NEG_INFINITY),
+        Some(f64::MAX),
+        Some(-f64::MAX),
+        None,
+    ] {
+        let request = jin10x::Jin10MacroMappingRequest {
+            msg_id: "SYNTH_MSG".into(),
+            kind: DataKind::Calendar,
+            indicator: Some("SYNTH_INDICATOR".into()),
+            subject: Some("SYNTH_SUBJECT".into()),
+            period: Some(Period::Month {
+                year: 2026,
+                month: 1,
+            }),
+            value,
+            unit: Jin10Unit::Unspecified,
+            frequency: Frequency::Monthly,
+            arrival_seq: 1,
+        };
+        let result = propose_macro_mapping(&request);
+        if value.map_or(true, f64::is_finite) {
+            assert!(result.is_ok());
+        } else {
+            assert_eq!(
+                result.expect_err("非有限数必须拒绝").kind(),
+                Jin10ErrorKind::Invalid
+            );
+        }
+    }
+}
+
+/// 直接构造提议或既有事实不得绕过非有限值边界。
+#[test]
+fn write_decision_rejects_non_finite_values_before_any_branch() {
+    for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        let mut candidate = jin10x::Jin10MacroProposal {
+            msg_id: "SYNTH_MSG".into(),
+            indicator: "SYNTH_INDICATOR".into(),
+            subject: "SYNTH_SUBJECT".into(),
+            period: Period::Year(2026),
+            value: Some(value),
+            unit: Jin10Unit::Unspecified,
+            frequency: Frequency::Annual,
+            arrival_seq: 1,
+        };
+        assert_eq!(
+            decide_macro_write(None, &candidate),
+            Jin10WriteDecision::InvalidRejected
+        );
+        for seq in [0, 1, 2] {
+            let mut existing = Jin10AcceptedFact {
+                msg_id: "SYNTH_OLD".into(),
+                indicator: candidate.indicator.clone(),
+                subject: candidate.subject.clone(),
+                period: candidate.period,
+                value: Some(1.0),
+                arrival_seq: seq,
+            };
+            assert_eq!(
+                decide_macro_write(Some(&existing), &candidate),
+                Jin10WriteDecision::InvalidRejected
+            );
+            candidate.value = Some(1.0);
+            existing.value = Some(value);
+            assert_eq!(
+                decide_macro_write(Some(&existing), &candidate),
+                Jin10WriteDecision::InvalidRejected
+            );
+            candidate.value = Some(value);
+        }
+    }
+}
