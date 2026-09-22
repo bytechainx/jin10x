@@ -106,11 +106,12 @@ impl Jin10MacroProposal {
 /// 2. 写入主权为 `Pending`（拍卖 / RRP）→
 ///    [`WriteAuthorityDenied`](crate::Jin10ErrorKind::WriteAuthorityDenied)；
 /// 3. 三要素缺失 → [`Missing`](crate::Jin10ErrorKind::Missing)；
-/// 4. 三要素为空串 / 全空白 → [`SemanticallyRejected`](crate::Jin10ErrorKind::SemanticallyRejected)。
+/// 4. 三要素为空串 / 全空白 → [`SemanticallyRejected`](crate::Jin10ErrorKind::SemanticallyRejected)；
+/// 5. 期间非法或值为非有限数 → [`Invalid`](crate::Jin10ErrorKind::Invalid)。
 ///
 /// # Errors
 ///
-/// 见上表四类；本函数**不**返回 `Ok` 以外的「部分接受」。
+/// 见上表五类；本函数**不**返回 `Ok` 以外的「部分接受」。
 pub fn propose_macro_mapping(
     request: &Jin10MacroMappingRequest,
 ) -> Result<Jin10MacroProposal, crate::Jin10Error> {
@@ -136,6 +137,11 @@ pub fn propose_macro_mapping(
         .period
         .ok_or_else(|| crate::Jin10Error::Missing("period（业务期间）".to_owned()))?;
     period.validate()?;
+    if request.value.is_some_and(|value| !value.is_finite()) {
+        return Err(crate::Jin10Error::Invalid(
+            "宏观映射值须为有限数值，缺失须保持 None".to_owned(),
+        ));
+    }
 
     Ok(Jin10MacroProposal {
         msg_id: request.msg_id.clone(),
@@ -183,6 +189,8 @@ pub struct Jin10AcceptedFact {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Jin10WriteDecision {
+    /// 拒绝：候选或既有事实含非有限数值，不得参与写入或幂等判定。
+    InvalidRejected,
     /// 接受为新的既有事实。
     Accept,
     /// 拒绝：候选更旧（乱序），**不得**覆盖既有事实。
@@ -203,6 +211,7 @@ pub enum Jin10WriteDecision {
 ///
 /// 判定口径：
 ///
+/// - 候选或既有事实含非有限数值 → [`InvalidRejected`](Jin10WriteDecision::InvalidRejected)；
 /// - 无既有事实 → [`Accept`](Jin10WriteDecision::Accept)；
 /// - 候选 `arrival_seq` **小于**既有事实 → [`StaleRejected`](Jin10WriteDecision::StaleRejected)
 ///   （乱序，不得覆盖）；
@@ -215,6 +224,11 @@ pub fn decide_macro_write(
     existing: Option<&Jin10AcceptedFact>,
     candidate: &Jin10MacroProposal,
 ) -> Jin10WriteDecision {
+    if candidate.value.is_some_and(|value| !value.is_finite())
+        || existing.is_some_and(|fact| fact.value.is_some_and(|value| !value.is_finite()))
+    {
+        return Jin10WriteDecision::InvalidRejected;
+    }
     let Some(fact) = existing else {
         return Jin10WriteDecision::Accept;
     };
