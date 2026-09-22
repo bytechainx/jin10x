@@ -57,6 +57,8 @@ pub struct Jin10AuthorizationEvidence {
 ///
 /// 判定顺序（任一不满足即拒绝，**不**默认放行）：
 ///
+/// 日期分量先复验：当前日、生效日或失效日非法即 `Denied`。
+///
 /// 1. 证据缺失 → `Denied`；
 /// 2. 覆盖范围为空 / 全空白 → `Denied`（范围不明）；
 /// 3. 签署者为空 / 全空白 → `Denied`（签署者不明）；
@@ -69,6 +71,14 @@ pub fn authorize(evidence: Option<&Jin10AuthorizationEvidence>, as_of: Date) -> 
             reason: format!("证据缺失：{AUTHORIZATION_EVIDENCE}"),
         };
     };
+    if as_of.validate().is_err()
+        || evidence.valid_from.validate().is_err()
+        || evidence.valid_until.validate().is_err()
+    {
+        return Jin10Authorization::Denied {
+            reason: "授权日期非法：须为有效日历日期".to_owned(),
+        };
+    }
     if evidence.scope.trim().is_empty() {
         return Jin10Authorization::Denied {
             reason: "覆盖范围不明：scope 为空".to_owned(),
@@ -201,5 +211,34 @@ mod tests {
             Jin10ErrorKind::AuthorizationDenied
         );
         assert!(ensure_authorized(Some(&complete()), date("2026-09-22")).is_ok());
+    }
+
+    #[test]
+    fn adversarial_authorization_dates_are_revalidated() {
+        let bad = Date {
+            year: 2026,
+            month: 9,
+            day: 99,
+        };
+        let mut evidence = complete();
+        assert!(matches!(
+            authorize(Some(&evidence), bad),
+            Jin10Authorization::Denied { .. }
+        ));
+        evidence.valid_from = Date {
+            year: 2026,
+            month: 0,
+            day: 1,
+        };
+        assert!(matches!(
+            authorize(Some(&evidence), date("2026-09-22")),
+            Jin10Authorization::Denied { .. }
+        ));
+        evidence = complete();
+        evidence.valid_until = bad;
+        assert!(matches!(
+            authorize(Some(&evidence), date("2026-09-22")),
+            Jin10Authorization::Denied { .. }
+        ));
     }
 }
