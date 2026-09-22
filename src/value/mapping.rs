@@ -189,7 +189,7 @@ pub struct Jin10AcceptedFact {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Jin10WriteDecision {
-    /// 拒绝：候选或既有事实含非有限数值，不得参与写入或幂等判定。
+    /// 拒绝：候选或既有事实含非有限数值、非法期间或空身份，不得参与写入或幂等判定。
     InvalidRejected,
     /// 接受为新的既有事实。
     Accept,
@@ -211,7 +211,7 @@ pub enum Jin10WriteDecision {
 ///
 /// 判定口径：
 ///
-/// - 候选或既有事实含非有限数值 → [`InvalidRejected`](Jin10WriteDecision::InvalidRejected)；
+/// - 候选或既有事实含非有限数值、非法期间或空白 indicator / subject → [`InvalidRejected`](Jin10WriteDecision::InvalidRejected)；
 /// - 无既有事实 → [`Accept`](Jin10WriteDecision::Accept)；
 /// - 候选 `arrival_seq` **小于**既有事实 → [`StaleRejected`](Jin10WriteDecision::StaleRejected)
 ///   （乱序，不得覆盖）；
@@ -224,7 +224,15 @@ pub fn decide_macro_write(
     existing: Option<&Jin10AcceptedFact>,
     candidate: &Jin10MacroProposal,
 ) -> Jin10WriteDecision {
-    if candidate.value.is_some_and(|value| !value.is_finite())
+    if candidate.period.validate().is_err()
+        || candidate.indicator.trim().is_empty()
+        || candidate.subject.trim().is_empty()
+        || existing.is_some_and(|fact| {
+            fact.period.validate().is_err()
+                || fact.indicator.trim().is_empty()
+                || fact.subject.trim().is_empty()
+        })
+        || candidate.value.is_some_and(|value| !value.is_finite())
         || existing.is_some_and(|fact| fact.value.is_some_and(|value| !value.is_finite()))
     {
         return Jin10WriteDecision::InvalidRejected;
@@ -402,5 +410,49 @@ mod tests {
     fn revision_surface_is_absent_and_not_faked() {
         let candidate = propose_macro_mapping(&request(DataKind::Calendar)).expect("三要素齐备");
         assert_eq!(candidate.revision(), None);
+    }
+
+    #[test]
+    fn adversarial_direct_write_revalidates_period_and_required_identity() {
+        let mut proposal = propose_macro_mapping(&request(DataKind::Calendar)).unwrap();
+        proposal.period = Period::Month {
+            year: 2026,
+            month: 99,
+        };
+        assert_eq!(
+            decide_macro_write(None, &proposal),
+            Jin10WriteDecision::InvalidRejected
+        );
+        for (indicator, subject) in [("", "US"), ("CPI", " ")] {
+            let mut proposal = propose_macro_mapping(&request(DataKind::Calendar)).unwrap();
+            proposal.indicator = indicator.into();
+            proposal.subject = subject.into();
+            assert_eq!(
+                decide_macro_write(None, &proposal),
+                Jin10WriteDecision::InvalidRejected
+            );
+        }
+        let proposal = propose_macro_mapping(&request(DataKind::Calendar)).unwrap();
+        let mut fact = Jin10AcceptedFact {
+            msg_id: proposal.msg_id.clone(),
+            indicator: proposal.indicator.clone(),
+            subject: proposal.subject.clone(),
+            period: Period::Month {
+                year: 2026,
+                month: 0,
+            },
+            value: proposal.value,
+            arrival_seq: proposal.arrival_seq,
+        };
+        assert_eq!(
+            decide_macro_write(Some(&fact), &proposal),
+            Jin10WriteDecision::InvalidRejected
+        );
+        fact.period = proposal.period;
+        fact.subject.clear();
+        assert_eq!(
+            decide_macro_write(Some(&fact), &proposal),
+            Jin10WriteDecision::InvalidRejected
+        );
     }
 }

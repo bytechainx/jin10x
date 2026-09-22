@@ -11,9 +11,9 @@
 | 信封校验 | `validate_envelope(&Jin10Envelope<Jin10Payload>)` | 标识、源标识、时间序、载荷与 `kind` 一致性的完整性校验 |
 | 载荷校验 | `validate_payload(&Jin10Payload)` | 载荷自身必填项与数值有限性校验 |
 | 映射守卫 | `propose_macro_mapping(&Jin10MacroMappingRequest)` | 三要素齐备且数值有限才提议；Quote 拒绝、拍卖/RRP 保持拒绝 |
-| 乱序保护 | `decide_macro_write(Option<&Jin10AcceptedFact>, &Jin10MacroProposal)` | `InvalidRejected` / `Accept` / `StaleRejected` / `Duplicate` / `Conflict`；非有限候选或既有值优先拒绝 |
+| 乱序保护 | `decide_macro_write(Option<&Jin10AcceptedFact>, &Jin10MacroProposal)` | `InvalidRejected` / `Accept` / `StaleRejected` / `Duplicate` / `Conflict`；候选或既有事实的非法期间、空白 indicator/subject、非有限值优先拒绝 |
 | 写入主权登记 | `write_sovereignty(DataKind)` | `Own` / `Pending` / `Routed`（只读结论） |
-| 授权判定 | `authorize(Option<&Jin10AuthorizationEvidence>, Date)` | fail-closed；六条拒绝路径 |
+| 授权判定 | `authorize(Option<&Jin10AuthorizationEvidence>, Date)` | fail-closed；复验当前日、生效日与失效日，非法日期拒绝 |
 | 授权判定（`?` 友好） | `ensure_authorized(Option<&Jin10AuthorizationEvidence>, Date)` | 拒绝时返回 `AuthorizationDenied` |
 | publication 语义 | `publication_semantics()` | 恒 `(Date, Inferred, NotEligible)` |
 | PIT 资格 | `is_formal_pit_eligible()` | 恒 `false` |
