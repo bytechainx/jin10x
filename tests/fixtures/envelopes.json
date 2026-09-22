@@ -1,0 +1,51 @@
+{
+  "_synthetic": true,
+  "_note": "本文件为特性 005 自拟的合成样本，不是真实源数据，不构成任何证据。",
+  "envelopes": [
+    {
+      "msg_id": "n-1",
+      "source": "jin10",
+      "kind": "Flash",
+      "event_time": "2026-09-18T09:31:05",
+      "collect_time": "2026-09-18T09:31:07",
+      "payload": {
+        "importance": 3,
+        "channels": ["fx", "macro"],
+        "content": "合成快讯正文（非真实内容）",
+        "is_data": false
+      },
+      "raw_ref": "jin10-raw/2026/09/18/n-1.json"
+    },
+    {
+      "msg_id": "n-2",
+      "source": "jin10",
+      "kind": "Calendar",
+      "event_time": "2026-09-18",
+      "collect_time": "2026-09-18T16:00:00",
+      "payload": {
+        "country": "US",
+        "indicator": "CPI YoY",
+        "previous": 3.0,
+        "consensus": 2.9,
+        "actual": 3.1,
+        "revised": null,
+        "surprise_z": null
+      },
+      "raw_ref": "jin10-raw/2026/09/18/n-2.json"
+    },
+    {
+      "msg_id": "n-3",
+      "source": "jin10",
+      "kind": "Quote",
+      "event_time": "2026-09-18T09:32:01",
+      "collect_time": "2026-09-18T09:32:02",
+      "payload": {
+        "symbol": "XAU",
+        "price": 2500.0,
+        "change_pct": 0.42,
+        "ts": "2026-09-18T09:32:01"
+      },
+      "raw_ref": "jin10-raw/2026/09/18/n-3.json"
+    }
+  ]
+}
