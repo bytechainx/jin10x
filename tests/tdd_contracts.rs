@@ -7,7 +7,7 @@
 //! TDD 行为契约（特性 005）。
 //!
 //! 入口集合 = 本 crate 全部公开入口（含 `validate*` / 判定函数 / 解析器 / 值对象方法）。
-//! 入口列按 `specs/002-public-api-compliance-and-test-tiers/contracts/public-api-contract.md`
+//! 入口列按 `specs/features/002-public-api-compliance-and-test-tiers/contracts/public-api-contract.md`
 //! 的机器格式书写：只写 `类型::方法` 或裸标识符（自由函数名 / 公开类型名），
 //! **不带**参数、返回值与泛型 —— 它同时是该契约的登记基准，检查器按**字符串精确比对**，
 //! 且要求标识符为裸形式（`entryIsReal` 只认 `fn <名>` 与
