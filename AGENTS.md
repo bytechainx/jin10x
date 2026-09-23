@@ -79,8 +79,8 @@ cargo bench --bench hot_path
 ## 相关文档
 
 - 采集范围权威：`specs/adapter/jin10.md`
-- 公共形状契约：`specs/005-macro-data-source-crates/contracts/source-library-contract.md`
-- 跨源路由与主权：`specs/005-macro-data-source-crates/contracts/cross-source-routing.md`
+- 公共形状契约：`specs/features/005-macro-data-source-crates/contracts/source-library-contract.md`
+- 跨源路由与主权：`specs/features/005-macro-data-source-crates/contracts/cross-source-routing.md`
 - API 文档：`docs/API.md`
 - 标准与验收：`docs/标准.md`
 - 术语与领域语言：`CONTEXT.md`

@@ -53,7 +53,7 @@
 ### 变更
 
 - **TDD-PROBE 入口列格式归一（仅测试面，公开 API 一字未改）**：按
-  `specs/002-public-api-compliance-and-test-tiers/contracts/public-api-contract.md` 的
+  `specs/features/002-public-api-compliance-and-test-tiers/contracts/public-api-contract.md` 的
   机器解析格式，把 `tests/tdd_contracts.rs` 的入口列由「带签名」改写为
   `类型::方法` 或裸函数名（例：`parse_jin10_envelopes`、`Date::parse`）。
   该格式是 C2 精确集合比对与 `entryIsReal` 判定的共同基准；变异列 / 红列 / 绿列未改动。
