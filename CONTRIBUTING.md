@@ -38,7 +38,7 @@ cargo package --no-verify
 ## 开发约定
 
 - 注释、文档、错误消息使用**简体中文**；标识符保持英文。
-- MSRV 为 Rust 1.71、edition 2021（推导过程见 `CONTEXT.md`）。
+- MSRV 为 Rust 1.77、edition 2021（推导过程见 `CONTEXT.md`）。
 - **零网络**：不得引入 `reqwest` / `hyper` / `ureq` / `curl` / `isahc` 等 HTTP 客户端，
   也不得引入 `tokio` / `async-std` / `chrono` / `time` / `rand`。
 - **零端点**：`src/` 内不得出现任何 `http://` / `https://` 字面量（含内联测试代码）；
