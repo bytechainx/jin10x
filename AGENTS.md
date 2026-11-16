@@ -11,7 +11,7 @@
 
 ## 技术栈
 
-- Rust edition 2021, rust-version 1.71（推导见 `CONTEXT.md`）
+- Rust edition 2021, rust-version 1.77（推导见 `CONTEXT.md`）
 - 依赖：`thiserror` / `serde`（`derive`）/ `serde_json`；**无**其它依赖
 - 禁止：任何 HTTP 客户端、异步运行时、`chrono` / `time` / `rand`、
   任何 `bytechainx/*` crate、任何 `path = "../…"` 依赖

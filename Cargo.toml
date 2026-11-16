@@ -2,7 +2,7 @@
 name = "jin10x"
 version = "0.1.2"
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.77"
 description = "金十数据源事实层：信封与数据类别类型化、离线解析、fail-closed 授权判定与跨域守卫"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bytechainx/jin10x"
