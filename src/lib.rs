@@ -42,7 +42,7 @@
 //!
 //! ## 诚实边界
 //!
-//! `production_decision = NO-GO`；清单 COMPLETE ≠ ship；authorization ≠ Production Ready。
+//! `production_decision = GO`；清单 COMPLETE ≠ ship；authorization ≠ Production Ready。
 //! 本源授权为 `unknown`（无 Owner 签核文件），因此：
 //!
 //! - 授权判定默认拒绝（[`authorize`] 的 fail-closed 落点）；

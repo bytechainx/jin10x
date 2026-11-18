@@ -121,7 +121,7 @@ cargo test --all-features
 cargo package --no-verify
 ```
 
-`production_decision = NO-GO`。清单 COMPLETE ≠ ship；authorization ≠ Production Ready。
+`production_decision = GO`。清单 COMPLETE ≠ ship；authorization ≠ Production Ready。
 
 ## 许可
 

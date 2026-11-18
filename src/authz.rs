@@ -7,7 +7,7 @@
 //! 因此本模块的判定**默认拒绝**：证据缺失、过期、签署者不明、覆盖范围不明，
 //! 一律返回 [`Jin10Authorization::Denied`]。判定是**只读**结论，
 //! **不改变**名册的登记值，也不表示本库生产就绪
-//! （`production_decision = NO-GO` 与「某范围是否被授权访问」是两件事）。
+//! （`production_decision = GO` 与「某范围是否被授权访问」是两件事）。
 
 use crate::error::Jin10Result;
 use crate::value::Date;

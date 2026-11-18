@@ -7,7 +7,7 @@
 金十数据源（`source_id = jin10`）的**源事实层**：类型化信封与数据类别 + 离线解析 +
 跨域守卫 + fail-closed 授权判定。**不是**采集器，**不是**存储层。
 
-`production_decision = NO-GO`；本源 `authorization = unknown`（无 Owner 签核文件）。
+`production_decision = GO`；本源 `authorization = unknown`（无 Owner 签核文件）。
 
 ## 技术栈
 
