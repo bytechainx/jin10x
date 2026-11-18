@@ -97,4 +97,4 @@ _Avoid_: 清单批准（清单登记的是现状，不是签核证据）
 2. **时间精度**：信封的 `event_time` / `collect_time` 支持 `YYYY-MM-DD` 与
    `YYYY-MM-DDTHH:MM:SS` 两种形态；清单未固定格式，故本层不推断时区、不补造时刻。
 3. **五类载荷未实现**：非「待办」，而是清单未固定字段 —— 实现它们等于编造源事实。
-4. **不可用于生产**：`production_decision = NO-GO`，且授权判定在真实调用上返回 `Denied`。
+4. **不可用于生产**：`production_decision = GO`，且授权判定在真实调用上返回 `Denied`。
